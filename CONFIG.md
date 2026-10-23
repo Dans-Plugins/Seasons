@@ -1,0 +1,29 @@
+# Seasons Configuration
+
+Seasons writes `plugins/Seasons/config.yml` on first start. Edit it and restart the server to apply changes.
+
+## Calendar
+
+| Key | Default | Description |
+|---|---|---|
+| `calendar.days-per-season.spring` | `28` | In-game days that spring lasts. |
+| `calendar.days-per-season.summer` | `28` | In-game days that summer lasts. |
+| `calendar.days-per-season.autumn` | `28` | In-game days that autumn lasts. |
+| `calendar.days-per-season.winter` | `28` | In-game days that winter lasts. |
+
+Each value must be a whole number of at least 1. A missing key uses the default. Any other value (zero, a negative number, text) stops the plugin from enabling, and the console names the offending key.
+
+The year runs spring, summer, autumn, winter, then back to spring. Its length is the sum of the four values.
+
+## Saved state
+
+The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables. It holds two keys:
+
+| Key | Description |
+|---|---|
+| `season` | `spring`, `summer`, `autumn` or `winter`. |
+| `day-of-season` | The day within that season, counting from 1. |
+
+The file stores the season rather than a bare day of the year, so changing season lengths never moves the server into a different season. If a season is shortened below the saved day, the date moves to that season's last day. A server with no `calendar.yml` starts on day 1 of spring.
+
+Nothing advances the date yet. Whether it follows in-game days or real time is an open question in [MVP.md](MVP.md).

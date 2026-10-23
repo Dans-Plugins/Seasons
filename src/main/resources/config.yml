@@ -1,0 +1,7 @@
+calendar:
+  # How many in-game days each season lasts. Each must be a whole number of at least 1.
+  days-per-season:
+    spring: 28
+    summer: 28
+    autumn: 28
+    winter: 28
