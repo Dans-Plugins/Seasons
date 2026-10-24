@@ -10,7 +10,7 @@ This plugin was proposed from a Kingdom: First Era player request on 2026-09-04.
 
 ## Project Status
 
-**Pre-implementation.** The plugin loads a configurable four-season calendar and keeps the current date across restarts, but nothing advances the date and no season has any effect yet. The scope of the first release is defined in [MVP.md](MVP.md) — read that before opening a pull request, because it says as much about what v1 will *not* do as what it will.
+**Pre-implementation.** The plugin loads a configurable four-season calendar and keeps the current date across restarts, and scales crop growth by the current season, but nothing advances the date yet, so the season only changes if `calendar.yml` is edited. The scope of the first release is defined in [MVP.md](MVP.md) — read that before opening a pull request, because it says as much about what v1 will *not* do as what it will.
 
 ## Planned Features
 
@@ -43,7 +43,7 @@ None. Seasons is intended to stand alone.
 ### Documentation
 
 - [MVP](MVP.md) – Scope of the first release, and its deliberate non-goals
-- [Configuration](CONFIG.md) – Every `config.yml` key and the saved calendar file
+- [Configuration](CONFIG.md) – Every `config.yml` key, including the per-season growth multipliers, and the saved calendar file
 
 `USER_GUIDE.md`, `COMMANDS.md` and `CHANGELOG.md` land with the first release, per [DOCUMENTATION_PRACTICES.md](https://github.com/Dans-Plugins/dpc-conventions/blob/main/docs/DOCUMENTATION_PRACTICES.md).
 

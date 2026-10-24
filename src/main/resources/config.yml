@@ -5,3 +5,11 @@ calendar:
     summer: 28
     autumn: 28
     winter: 28
+growth:
+  # How fast crops grow in each season. 1.0 is vanilla, 0.5 is half speed, 2.0 is double.
+  # Each must be a number of at least 0; 0 stops crop growth for that season.
+  multiplier:
+    spring: 1.5
+    summer: 1.0
+    autumn: 0.75
+    winter: 0.25
