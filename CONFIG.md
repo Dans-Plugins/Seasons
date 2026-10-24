@@ -15,6 +15,25 @@ Each value must be a whole number of at least 1. A missing key uses the default.
 
 The year runs spring, summer, autumn, winter, then back to spring. Its length is the sum of the four values.
 
+## Growth
+
+| Key | Default | Description |
+|---|---|---|
+| `growth.multiplier.spring` | `1.5` | Crop growth speed in spring. |
+| `growth.multiplier.summer` | `1.0` | Crop growth speed in summer. |
+| `growth.multiplier.autumn` | `0.75` | Crop growth speed in autumn. |
+| `growth.multiplier.winter` | `0.25` | Crop growth speed in winter. |
+
+`1.0` is vanilla speed. Each value must be a number of at least 0. A missing key uses the default. Any other value (a negative number, text) stops the plugin from enabling, and the console names the offending key.
+
+The multiplier applies to every vanilla growth step (Bukkit's `BlockGrowEvent`) while that season is current:
+
+- Below `1.0`, each step happens only with that chance, so `0.25` lets one step in four through. `0` stops growth for the season.
+- Above `1.0`, every step happens, and the part above each whole number is the chance of growing one more stage. `1.5` grows a crop one stage or two with equal chance; `2.0` always grows two. Extra stages never take a crop past fully grown.
+- Extra stages only apply to crops that age in place, such as wheat, carrots and nether wart. Growth that places a new block, such as sugar cane, cactus, or a melon or pumpkin beside its stem, is slowed by a multiplier below `1.0` but not sped up by one above it.
+
+The server's `randomTickSpeed` is never changed, so ore blocks, fire spread and other random-tick behaviour are unaffected.
+
 ## Saved state
 
 The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables. It holds two keys:
