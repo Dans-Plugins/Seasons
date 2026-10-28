@@ -13,3 +13,18 @@ growth:
     summer: 1.0
     autumn: 0.75
     winter: 0.25
+weather:
+  # The chance, from 0 to 1, that each new natural weather period is rainy (rain-chance)
+  # or thundery (thunder-chance). Thunder is only seen while it is also raining.
+  spring:
+    rain-chance: 0.6
+    thunder-chance: 0.2
+  summer:
+    rain-chance: 0.3
+    thunder-chance: 0.3
+  autumn:
+    rain-chance: 0.5
+    thunder-chance: 0.4
+  winter:
+    rain-chance: 0.4
+    thunder-chance: 0.05
