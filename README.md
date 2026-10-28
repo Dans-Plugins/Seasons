@@ -8,6 +8,15 @@ It exists because a survival server that runs for months has no sense of elapsed
 
 This plugin was proposed from a Kingdom: First Era player request on 2026-09-04.
 
+### Preview: a year of the default config
+
+<picture>
+  <source media="(prefers-reduced-motion: reduce)" srcset="docs/images/seasons-year-poster.png">
+  <img src="docs/images/seasons-year.gif" width="600" alt="A small wheat farm through one Seasons year. Spring, summer, autumn and winter each last 28 days; the field is replanted after every harvest and ripens in about 1.6 days in spring (growth x1.5), 2.4 in summer (x1.0), 3.2 in autumn (x0.75) and 9.6 in winter (x0.25), so it is harvested 9, 7, 6 and 2 times. The sun's angle, the grass and the leaves change with the season.">
+</picture>
+
+*One year of the default `config.yml` (four 28-day seasons, growth x1.5 / x1.0 / x0.75 / x0.25) played over a wheat field at two steps a day, rendered headless with [Strata](https://github.com/Preponderous-Software/strata) 0.6.0 by [`scripts/preview/render_year.py`](scripts/preview/render_year.py). The calendar and multipliers are read from the config file, and each growth step goes through a copy of `GrowthPolicy.stagesFor`. The vanilla side is modelled, not recorded: a hydrated wheat field gets about 17.6 random ticks a day and grows on one in six. The sun (Strata's solar position at 15:00, 40° N, each season laid over the matching quarter of 2026) and the colours are decoration; Seasons does not change day length or weather yet, and nothing advances the date yet, so this shows what the calendar will do once it does.*
+
 ## Project Status
 
 **Pre-implementation.** The plugin loads a configurable four-season calendar and keeps the current date across restarts, and scales crop growth and biases rain and thunder by the current season, but nothing advances the date yet, so the season only changes if `calendar.yml` is edited. The scope of the first release is defined in [MVP.md](MVP.md) — read that before opening a pull request, because it says as much about what v1 will *not* do as what it will.
