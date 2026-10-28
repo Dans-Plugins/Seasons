@@ -34,6 +34,29 @@ The multiplier applies to every vanilla growth step (Bukkit's `BlockGrowEvent`) 
 
 The server's `randomTickSpeed` is never changed, so ore blocks, fire spread and other random-tick behaviour are unaffected.
 
+## Weather
+
+| Key | Default | Description |
+|---|---|---|
+| `weather.spring.rain-chance` | `0.6` | Chance that a new weather period in spring is rainy. |
+| `weather.spring.thunder-chance` | `0.2` | Chance that a new thunder period in spring is thundery. |
+| `weather.summer.rain-chance` | `0.3` | Chance that a new weather period in summer is rainy. |
+| `weather.summer.thunder-chance` | `0.3` | Chance that a new thunder period in summer is thundery. |
+| `weather.autumn.rain-chance` | `0.5` | Chance that a new weather period in autumn is rainy. |
+| `weather.autumn.thunder-chance` | `0.4` | Chance that a new thunder period in autumn is thundery. |
+| `weather.winter.rain-chance` | `0.4` | Chance that a new weather period in winter is rainy. |
+| `weather.winter.thunder-chance` | `0.05` | Chance that a new thunder period in winter is thundery. |
+
+Each value must be a number from 0 to 1. A missing key uses the default. Any other value (a negative number, a number above 1, text) stops the plugin from enabling, and the console names the offending key.
+
+Vanilla still decides how long each weather period lasts. Whenever a period ends naturally, the current season decides what the next one is: with `rain-chance: 0.6`, each new period is rainy with a 60% chance and clear otherwise. If the season picks the weather that is already in place, it carries on for as long as the period vanilla was about to start would have lasted. Thunder works the same way on its own timer, and is only seen while it is also raining. `0` means the weather never turns that way in that season; `1` means it never turns away.
+
+The chance is per period, not a share of time: vanilla clear periods usually last much longer than rainy ones, so a `rain-chance` of `0.5` does not mean it rains half the time.
+
+Weather set with vanilla's `/weather` (including `/minecraft:weather` and from the console or a command block), or cleared by players sleeping through the night, is never overridden. Spigot does not report why weather changed, so a change made by another plugin, or by another plugin's weather command such as `/sun` or `/storm`, is treated like a natural one and the season may cancel it.
+
+Rain does not yet turn to snow in winter. It already falls as snow in cold biomes, as in vanilla.
+
 ## Saved state
 
 The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables. It holds two keys:
