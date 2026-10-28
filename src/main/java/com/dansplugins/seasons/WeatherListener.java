@@ -18,8 +18,8 @@ import java.util.function.Supplier;
  * Applies the current season's {@link WeatherPolicy} to weather changes.
  *
  * <p>When vanilla ends a weather period, the season decides what the next one is: a change towards
- * the state the season did not pick is cancelled, so the current weather carries on for another
- * vanilla period.
+ * the state the season did not pick is cancelled, so the current weather carries on for as long as
+ * the period vanilla was about to start would have lasted.
  *
  * <p>The Spigot API does not say why the weather changed, so changes made by the {@code /weather}
  * command or by players sleeping through the night are recognised by the event that comes just

@@ -49,7 +49,7 @@ The server's `randomTickSpeed` is never changed, so ore blocks, fire spread and 
 
 Each value must be a number from 0 to 1. A missing key uses the default. Any other value (a negative number, a number above 1, text) stops the plugin from enabling, and the console names the offending key.
 
-Vanilla still decides how long each weather period lasts. Whenever a period ends naturally, the current season decides what the next one is: with `rain-chance: 0.6`, each new period is rainy with a 60% chance and clear otherwise. If the season picks the weather that is already in place, it carries on for another vanilla period. Thunder works the same way on its own timer, and is only seen while it is also raining. `0` means the weather never turns that way in that season; `1` means it never turns away.
+Vanilla still decides how long each weather period lasts. Whenever a period ends naturally, the current season decides what the next one is: with `rain-chance: 0.6`, each new period is rainy with a 60% chance and clear otherwise. If the season picks the weather that is already in place, it carries on for as long as the period vanilla was about to start would have lasted. Thunder works the same way on its own timer, and is only seen while it is also raining. `0` means the weather never turns that way in that season; `1` means it never turns away.
 
 The chance is per period, not a share of time: vanilla clear periods usually last much longer than rainy ones, so a `rain-chance` of `0.5` does not mean it rains half the time.
 
