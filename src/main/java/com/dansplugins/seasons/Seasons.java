@@ -45,7 +45,8 @@ public final class Seasons extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new GrowthListener(growth, () -> date.getSeason(),
                 () -> ThreadLocalRandom.current().nextDouble()), this);
         getServer().getPluginManager().registerEvents(new WeatherListener(weather, () -> date.getSeason(),
-                () -> ThreadLocalRandom.current().nextDouble()), this);
+                () -> ThreadLocalRandom.current().nextDouble(),
+                task -> getServer().getScheduler().runTask(this, task)), this);
     }
 
     @Override
