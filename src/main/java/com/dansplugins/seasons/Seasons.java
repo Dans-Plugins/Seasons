@@ -1,5 +1,6 @@
 package com.dansplugins.seasons;
 
+import org.bukkit.command.PluginCommand;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
@@ -9,7 +10,8 @@ import java.util.logging.Level;
 
 /**
  * Entry point for Seasons. Features are scoped in MVP.md; so far the calendar, its persistence,
- * per-season crop growth and per-season rain and thunder exist, and nothing advances the date yet.
+ * per-season crop growth, per-season rain and thunder and the {@code /season} command exist, and
+ * nothing advances the date yet.
  */
 public final class Seasons extends JavaPlugin {
 
@@ -47,6 +49,22 @@ public final class Seasons extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new WeatherListener(weather, () -> date.getSeason(),
                 () -> ThreadLocalRandom.current().nextDouble(),
                 task -> getServer().getScheduler().runTask(this, task)), this);
+        SeasonCommand command = new SeasonCommand(calendar, () -> date, this::setDate);
+        PluginCommand season = getCommand("season");
+        season.setExecutor(command);
+        season.setTabCompleter(command);
+    }
+
+    /**
+     * Makes the given date the current one and saves it at once, so it survives a crash.
+     */
+    private void setDate(CalendarDate newDate) {
+        date = newDate;
+        try {
+            store.save(date);
+        } catch (IOException e) {
+            getLogger().log(Level.SEVERE, "Could not save the calendar date", e);
+        }
     }
 
     @Override

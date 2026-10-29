@@ -4,3 +4,15 @@ main: com.dansplugins.seasons.Seasons
 api-version: '1.16'
 authors: ["Daniel McCoy Stephenson"]
 description: Gives the server a year of seasons that change weather, growth and day length
+commands:
+  season:
+    description: Shows the current season and date, or sets it
+    usage: /season [set <season> [day]]
+    permission: seasons.season
+permissions:
+  seasons.season:
+    description: Allows reading the current season and date with /season
+    default: true
+  seasons.set:
+    description: Allows setting the season and date with /season set
+    default: op
