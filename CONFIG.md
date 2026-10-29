@@ -59,7 +59,7 @@ Rain does not yet turn to snow in winter. It already falls as snow in cold biome
 
 ## Saved state
 
-The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables. It holds two keys:
+The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables and whenever [`/season set`](COMMANDS.md) changes the date. It holds two keys:
 
 | Key | Description |
 |---|---|
@@ -68,4 +68,4 @@ The current date is kept in `plugins/Seasons/calendar.yml`, separate from the co
 
 The file stores the season rather than a bare day of the year, so changing season lengths never moves the server into a different season. If a season is shortened below the saved day, the date moves to that season's last day. A server with no `calendar.yml` starts on day 1 of spring.
 
-Nothing advances the date yet. Whether it follows in-game days or real time is an open question in [MVP.md](MVP.md).
+Nothing advances the date on its own yet; only `/season set` changes it. Whether it follows in-game days or real time is an open question in [MVP.md](MVP.md).
