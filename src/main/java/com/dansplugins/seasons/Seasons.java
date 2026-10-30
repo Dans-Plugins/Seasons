@@ -10,8 +10,8 @@ import java.util.logging.Level;
 
 /**
  * Entry point for Seasons. Features are scoped in MVP.md; so far the calendar, its persistence,
- * per-season crop growth, per-season rain and thunder and the {@code /season} command exist, and
- * nothing advances the date yet.
+ * per-season crop growth, per-season rain and thunder, the {@code /season} command and the
+ * season-change announcement exist, and nothing advances the date yet.
  */
 public final class Seasons extends JavaPlugin {
 
@@ -22,6 +22,7 @@ public final class Seasons extends JavaPlugin {
     private CalendarDate date;
     private GrowthPolicy growth;
     private WeatherPolicy weather;
+    private Announcement announcement;
 
     @Override
     public void onEnable() {
@@ -32,6 +33,7 @@ public final class Seasons extends JavaPlugin {
             date = store.load(calendar);
             growth = GrowthPolicy.fromConfig(getConfig());
             weather = WeatherPolicy.fromConfig(getConfig());
+            announcement = Announcement.fromConfig(getConfig());
         } catch (IllegalArgumentException | IOException e) {
             getLogger().severe("Disabling Seasons: " + e.getMessage());
             calendar = null;
@@ -39,6 +41,7 @@ public final class Seasons extends JavaPlugin {
             date = null;
             growth = null;
             weather = null;
+            announcement = null;
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
@@ -56,10 +59,15 @@ public final class Seasons extends JavaPlugin {
     }
 
     /**
-     * Makes the given date the current one and saves it at once, so it survives a crash.
+     * Makes the given date the current one, announces a change of season, and saves it at once, so
+     * it survives a crash.
      */
     private void setDate(CalendarDate newDate) {
+        String message = announcement.messageFor(date, newDate);
         date = newDate;
+        if (message != null) {
+            getServer().broadcastMessage(message);
+        }
         try {
             store.save(date);
         } catch (IOException e) {

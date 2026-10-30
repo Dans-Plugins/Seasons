@@ -57,6 +57,17 @@ Weather set with vanilla's `/weather` (including `/minecraft:weather` and from t
 
 Rain does not yet turn to snow in winter. It already falls as snow in cold biomes, as in vanilla.
 
+## Announcement
+
+| Key | Default | Description |
+|---|---|---|
+| `announcement.enabled` | `true` | Whether a chat message is broadcast to everyone when the season changes. |
+| `announcement.message` | `'&6It is now {season}.'` | The message. `{season}` is replaced with the new season (`spring`, `summer`, `autumn` or `winter`), and `&` colour codes such as `&6` (gold) are allowed. |
+
+`announcement.enabled` must be `true` or `false`, and `announcement.message` must be text. A missing key uses the default. Any other value stops the plugin from enabling, and the console names the offending key. A blank message announces nothing, as does `enabled: false`.
+
+The message is sent only when the season itself changes. Moving to another day of the same season announces nothing. For now only [`/season set`](COMMANDS.md) changes the date, so it is the only thing that triggers the announcement.
+
 ## Saved state
 
 The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables and whenever [`/season set`](COMMANDS.md) changes the date. It holds two keys:
