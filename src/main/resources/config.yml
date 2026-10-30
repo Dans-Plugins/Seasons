@@ -28,3 +28,9 @@ weather:
   winter:
     rain-chance: 0.4
     thunder-chance: 0.05
+announcement:
+  # Whether a chat message is broadcast to everyone when the season changes.
+  enabled: true
+  # The message. {season} is replaced with the new season; & colour codes are allowed.
+  # A blank message announces nothing.
+  message: '&6It is now {season}.'
