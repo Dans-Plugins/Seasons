@@ -79,4 +79,6 @@ The current date is kept in `plugins/Seasons/calendar.yml`, separate from the co
 
 The file stores the season rather than a bare day of the year, so changing season lengths never moves the server into a different season. If a season is shortened below the saved day, the date moves to that season's last day. A server with no `calendar.yml` starts on day 1 of spring.
 
+If `calendar.yml` cannot be read as YAML, or holds an unknown `season` or a `day-of-season` that is not a whole number of at least 1, the plugin does not enable, and the console names the file and what is wrong with it. The file is left as it is, so fix or delete it and restart; deleting it starts the server on day 1 of spring.
+
 Nothing advances the date on its own yet; only `/season set` changes it. Whether it follows in-game days or real time is an open question in [MVP.md](MVP.md).
