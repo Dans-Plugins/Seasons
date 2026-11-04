@@ -2,6 +2,8 @@
 
 Seasons writes `plugins/Seasons/config.yml` on first start. Edit it and restart the server to apply changes.
 
+If the file is not valid YAML (a tab used for indentation, for example), the plugin does not enable, and the console names the file and what is wrong with it. `calendar.yml` is left as it is, so the saved date is safe; fix the file and restart.
+
 ## Calendar
 
 | Key | Default | Description |
