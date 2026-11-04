@@ -2,6 +2,8 @@
 
 Seasons writes `plugins/Seasons/config.yml` on first start. Edit it and restart the server to apply changes.
 
+If the file is not valid YAML (a tab used for indentation, for example), the plugin does not enable, and the console names the file and what is wrong with it. `calendar.yml` is left as it is, so the saved date is safe; fix the file and restart.
+
 ## Calendar
 
 | Key | Default | Description |
@@ -53,7 +55,7 @@ Vanilla still decides how long each weather period lasts. Whenever a period ends
 
 The chance is per period, not a share of time: vanilla clear periods usually last much longer than rainy ones, so a `rain-chance` of `0.5` does not mean it rains half the time.
 
-Weather set with vanilla's `/weather` (including `/minecraft:weather` and from the console or a command block), or cleared by players sleeping through the night, is never overridden. Spigot does not report why weather changed, so a change made by another plugin, or by another plugin's weather command such as `/sun` or `/storm`, is treated like a natural one and the season may cancel it.
+Weather set with vanilla's `/weather` (including `/minecraft:weather`, `/execute ... run weather`, and from the console or a command block), or cleared by players sleeping through the night, is never overridden. Spigot does not report why weather changed, so a change made by another plugin, by another plugin's weather command such as `/sun` or `/storm`, or by a `weather` command inside a data pack function, is treated like a natural one and the season may cancel it.
 
 Rain does not yet turn to snow in winter. It already falls as snow in cold biomes, as in vanilla.
 

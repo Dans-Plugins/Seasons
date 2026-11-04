@@ -15,6 +15,7 @@ import java.util.logging.Level;
  */
 public final class Seasons extends JavaPlugin {
 
+    static final String CONFIG_FILE_NAME = "config.yml";
     static final String DATA_FILE_NAME = "calendar.yml";
 
     private SeasonCalendar calendar;
@@ -28,6 +29,7 @@ public final class Seasons extends JavaPlugin {
     public void onEnable() {
         saveDefaultConfig();
         try {
+            ConfigFile.requireReadable(new File(getDataFolder(), CONFIG_FILE_NAME));
             calendar = SeasonCalendar.fromConfig(getConfig());
             store = new CalendarStore(new File(getDataFolder(), DATA_FILE_NAME));
             date = store.load(calendar);
