@@ -209,10 +209,38 @@ class WeatherListenerTest {
     }
 
     @Test
+    void recognisesTheWeatherCommandRunThroughExecute() {
+        assertTrue(WeatherListener.isWeatherCommand("/execute run weather rain"));
+        assertTrue(WeatherListener.isWeatherCommand("execute as @a at @s run minecraft:weather clear"));
+        assertTrue(WeatherListener.isWeatherCommand("/minecraft:execute run weather thunder"));
+        assertTrue(WeatherListener.isWeatherCommand("/EXECUTE RUN WEATHER rain"));
+        assertTrue(WeatherListener.isWeatherCommand("/execute as @a run execute at @s run weather rain"));
+    }
+
+    @Test
     void doesNotMistakeOtherCommandsForWeather() {
         assertFalse(WeatherListener.isWeatherCommand("/time set day"));
         assertFalse(WeatherListener.isWeatherCommand("/weatherman"));
         assertFalse(WeatherListener.isWeatherCommand("/say weather rain"));
         assertFalse(WeatherListener.isWeatherCommand(""));
+    }
+
+    @Test
+    void doesNotMistakeOtherExecuteCommandsForWeather() {
+        assertFalse(WeatherListener.isWeatherCommand("/execute run say weather"));
+        assertFalse(WeatherListener.isWeatherCommand("/execute run say run weather rain"));
+        assertFalse(WeatherListener.isWeatherCommand("/execute as @a"));
+        assertFalse(WeatherListener.isWeatherCommand("/execute"));
+    }
+
+    @Test
+    void weatherCommandRunThroughExecuteIsLeftAlone() {
+        WeatherListener listener = listener(Season.WINTER, 0.0, 0.0, 0.5);
+        WeatherChangeEvent rain = weather(true);
+
+        listener.onServerCommand(new ServerCommandEvent(null, "execute run weather rain"));
+        listener.onWeatherChange(rain);
+
+        assertFalse(rain.isCancelled());
     }
 }

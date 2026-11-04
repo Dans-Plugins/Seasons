@@ -27,6 +27,8 @@ import java.util.function.Supplier;
  */
 final class WeatherListener implements Listener {
 
+    private static final String EXECUTE_RUN = " run ";
+
     private final WeatherPolicy policy;
     private final Supplier<Season> currentSeason;
     private final DoubleSupplier random;
@@ -87,7 +89,7 @@ final class WeatherListener implements Listener {
 
     /**
      * Returns whether a command line runs vanilla's {@code /weather}, with or without the leading
-     * slash or the {@code minecraft:} namespace.
+     * slash or the {@code minecraft:} namespace, directly or through {@code /execute ... run}.
      */
     static boolean isWeatherCommand(String commandLine) {
         String line = commandLine.trim();
@@ -96,6 +98,10 @@ final class WeatherListener implements Listener {
         }
         int space = line.indexOf(' ');
         String label = (space < 0 ? line : line.substring(0, space)).toLowerCase(Locale.ROOT);
+        if (label.equals("execute") || label.equals("minecraft:execute")) {
+            int run = line.toLowerCase(Locale.ROOT).indexOf(EXECUTE_RUN);
+            return run >= 0 && isWeatherCommand(line.substring(run + EXECUTE_RUN.length()));
+        }
         return label.equals("weather") || label.equals("minecraft:weather");
     }
 
