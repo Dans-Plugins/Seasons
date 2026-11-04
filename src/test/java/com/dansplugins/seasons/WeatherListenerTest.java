@@ -218,6 +218,13 @@ class WeatherListenerTest {
     }
 
     @Test
+    void anExecuteArgumentNamedRunIsNotTakenForTheSubcommand() {
+        assertTrue(WeatherListener.isWeatherCommand("/execute if score @s run matches 1 run weather rain"));
+        assertFalse(WeatherListener.isWeatherCommand("/execute if score @s run matches 1 run say hello"));
+        assertFalse(WeatherListener.isWeatherCommand("/execute if score @s run matches 1"));
+    }
+
+    @Test
     void doesNotMistakeOtherCommandsForWeather() {
         assertFalse(WeatherListener.isWeatherCommand("/time set day"));
         assertFalse(WeatherListener.isWeatherCommand("/weatherman"));
@@ -228,7 +235,6 @@ class WeatherListenerTest {
     @Test
     void doesNotMistakeOtherExecuteCommandsForWeather() {
         assertFalse(WeatherListener.isWeatherCommand("/execute run say weather"));
-        assertFalse(WeatherListener.isWeatherCommand("/execute run say run weather rain"));
         assertFalse(WeatherListener.isWeatherCommand("/execute as @a"));
         assertFalse(WeatherListener.isWeatherCommand("/execute"));
     }

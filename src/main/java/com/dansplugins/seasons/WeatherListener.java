@@ -90,6 +90,11 @@ final class WeatherListener implements Listener {
     /**
      * Returns whether a command line runs vanilla's {@code /weather}, with or without the leading
      * slash or the {@code minecraft:} namespace, directly or through {@code /execute ... run}.
+     *
+     * <p>The last {@code run} is taken as the subcommand, because an earlier one can be an argument
+     * ({@code if score @s run matches 1}) and {@code /weather} never takes that word. The word in
+     * another command's text ({@code execute run say run weather}) is misread, which only exempts
+     * that tick.
      */
     static boolean isWeatherCommand(String commandLine) {
         String line = commandLine.trim();
@@ -99,7 +104,7 @@ final class WeatherListener implements Listener {
         int space = line.indexOf(' ');
         String label = (space < 0 ? line : line.substring(0, space)).toLowerCase(Locale.ROOT);
         if (label.equals("execute") || label.equals("minecraft:execute")) {
-            int run = line.toLowerCase(Locale.ROOT).indexOf(EXECUTE_RUN);
+            int run = line.toLowerCase(Locale.ROOT).lastIndexOf(EXECUTE_RUN);
             return run >= 0 && isWeatherCommand(line.substring(run + EXECUTE_RUN.length()));
         }
         return label.equals("weather") || label.equals("minecraft:weather");
