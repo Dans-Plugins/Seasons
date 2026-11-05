@@ -19,3 +19,5 @@ Tab completion suggests `set` and then the four season names, but only to someon
 |---|---|---|
 | `seasons.season` | everyone | Use `/season` to read the current season and date. |
 | `seasons.set` | operators | Use `/season set` to change the season and date. |
+
+`seasons.season` gates the whole command, so `/season set` needs both permissions. Someone denied `seasons.season` gets Bukkit's no-permission message and cannot use `/season set`, even with `seasons.set`.
