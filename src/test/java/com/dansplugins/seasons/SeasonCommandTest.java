@@ -1,19 +1,23 @@
 package com.dansplugins.seasons;
 
+import org.bukkit.command.CommandSender;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
- * Tests run without a server, so they call {@link SeasonCommand#reply} and
- * {@link SeasonCommand#complete} with the sender's permissions as a predicate.
+ * Tests run without a server, so most call {@link SeasonCommand#reply} and
+ * {@link SeasonCommand#complete} with the sender's permissions as a predicate. The Bukkit methods
+ * are driven by a {@link Sender}, a proxy of {@link CommandSender}.
  */
 class SeasonCommandTest {
 
@@ -151,6 +155,133 @@ class SeasonCommandTest {
 
     @Test
     void completesNothingWithoutPermission() {
-        assertEquals(List.of(), command(CalendarDate.startOfYear()).complete(args(""), PLAYER));
+        SeasonCommand command = command(CalendarDate.startOfYear());
+
+        assertEquals(List.of(), command.complete(args(""), PLAYER));
+        assertEquals(List.of(), command.complete(args("set", ""), PLAYER));
+    }
+
+    @Test
+    void refusesWithoutPermissionBeforeLookingAtTheArguments() {
+        SeasonCommand command = command(CalendarDate.startOfYear());
+        String refusal = "You do not have permission to set the season.";
+
+        assertEquals(refusal, command.reply(args("set"), PLAYER));
+        assertEquals(refusal, command.reply(args("set", "monsoon"), PLAYER));
+        assertEquals(refusal, command.reply(args("set", "spring", "99"), PLAYER));
+    }
+
+    @Test
+    void anUnknownSubcommandNeedsNoPermissionToBeTold() {
+        String reply = command(CalendarDate.startOfYear()).reply(args("advance"), PLAYER);
+
+        assertEquals("Unknown subcommand 'advance'. Use /season or /season set <season> [day].", reply);
+    }
+
+    @Test
+    void everyRejectedDayNamesTheRangeOfTheChosenSeason() {
+        SeasonCommand command = command(new CalendarDate(Season.WINTER, 40));
+        String rangeOfSummer = "The day must be a whole number from 1 to 20 for summer.";
+
+        assertEquals(rangeOfSummer, command.reply(args("set", "summer", "0"), ADMIN));
+        assertEquals(rangeOfSummer, command.reply(args("set", "summer", "-3"), ADMIN));
+        assertEquals(rangeOfSummer, command.reply(args("set", "summer", "two"), ADMIN));
+        assertEquals(rangeOfSummer, command.reply(args("set", "summer", "1.5"), ADMIN));
+        assertEquals(rangeOfSummer, command.reply(args("set", "summer", "21"), ADMIN));
+        assertEquals(rangeOfSummer, command.reply(args("set", "summer", "99999999999"), ADMIN));
+        assertTrue(set.isEmpty());
+    }
+
+    @Test
+    void settingTheCurrentDateStillGoesThroughSetDate() {
+        command(new CalendarDate(Season.AUTUMN, 7)).reply(args("set", "autumn", "7"), ADMIN);
+
+        assertEquals(List.of(new CalendarDate(Season.AUTUMN, 7)), set);
+    }
+
+    @Test
+    void completesTheSubcommandAndSeasonsWhateverTheCase() {
+        SeasonCommand command = command(CalendarDate.startOfYear());
+
+        assertEquals(List.of("set"), command.complete(args("SE"), ADMIN));
+        assertEquals(List.of("winter"), command.complete(args("SET", "w"), ADMIN));
+    }
+
+    @Test
+    void completesSeasonsOnlyAfterTheSetSubcommand() {
+        assertEquals(List.of(), command(CalendarDate.startOfYear()).complete(args("advance", ""), ADMIN));
+    }
+
+    @Test
+    void completesNothingBeforeAnythingIsTyped() {
+        assertEquals(List.of(), command(CalendarDate.startOfYear()).complete(args(), ADMIN));
+    }
+
+    @Test
+    void onCommandSendsTheReplyToTheSenderAndReportsTheCommandHandled() {
+        Sender sender = new Sender();
+
+        boolean handled = command(new CalendarDate(Season.AUTUMN, 7)).onCommand(sender.asCommandSender(), null,
+                "season", args());
+
+        assertTrue(handled);
+        assertEquals(List.of("It is autumn, day 7 of 30 (day 37 of 100 in the year)."), sender.messages);
+    }
+
+    @Test
+    void onCommandStillReportsARefusedCommandHandled() {
+        // Returning false would make Bukkit print the usage line underneath the reply.
+        Sender sender = new Sender();
+
+        boolean handled = command(CalendarDate.startOfYear()).onCommand(sender.asCommandSender(), null,
+                "season", args("set", "winter"));
+
+        assertTrue(handled);
+        assertEquals(List.of("You do not have permission to set the season."), sender.messages);
+        assertTrue(set.isEmpty());
+    }
+
+    @Test
+    void onCommandTakesThePermissionFromTheSender() {
+        Sender sender = new Sender(SeasonCommand.SET_PERMISSION);
+
+        command(CalendarDate.startOfYear()).onCommand(sender.asCommandSender(), null, "season",
+                args("set", "winter"));
+
+        assertEquals(List.of(new CalendarDate(Season.WINTER, 1)), set);
+    }
+
+    @Test
+    void onTabCompleteTakesThePermissionFromTheSender() {
+        SeasonCommand command = command(CalendarDate.startOfYear());
+
+        assertEquals(List.of("set"), command.onTabComplete(
+                new Sender(SeasonCommand.SET_PERMISSION).asCommandSender(), null, "season", args("")));
+        assertEquals(List.of(), command.onTabComplete(new Sender().asCommandSender(), null, "season", args("")));
+    }
+
+    /** A command sender that holds the given permissions and records what it is sent. */
+    private static final class Sender {
+        final List<String> messages = new ArrayList<>();
+        private final Set<String> permissions;
+
+        Sender(String... permissions) {
+            this.permissions = Set.of(permissions);
+        }
+
+        CommandSender asCommandSender() {
+            return (CommandSender) Proxy.newProxyInstance(getClass().getClassLoader(),
+                    new Class<?>[] {CommandSender.class}, (proxy, method, args) -> {
+                        switch (method.getName()) {
+                            case "hasPermission":
+                                return permissions.contains(args[0]);
+                            case "sendMessage":
+                                messages.add((String) args[0]);
+                                return null;
+                            default:
+                                throw new UnsupportedOperationException(method.getName());
+                        }
+                    });
+        }
     }
 }
