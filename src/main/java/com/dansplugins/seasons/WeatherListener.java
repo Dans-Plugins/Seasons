@@ -4,6 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
@@ -75,6 +76,18 @@ final class WeatherListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onServerCommand(ServerCommandEvent event) {
+        if (isWeatherCommand(event.getCommand())) {
+            exemptThisTick();
+        }
+    }
+
+    /**
+     * Commands sent over RCON need their own handler: {@link RemoteServerCommandEvent} extends
+     * {@link ServerCommandEvent} but has its own handler list, so {@link #onServerCommand} never
+     * sees them.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onRemoteCommand(RemoteServerCommandEvent event) {
         if (isWeatherCommand(event.getCommand())) {
             exemptThisTick();
         }
