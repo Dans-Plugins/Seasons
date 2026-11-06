@@ -1,11 +1,14 @@
 package com.dansplugins.seasons;
 
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.server.RemoteServerCommandEvent;
 import org.bukkit.event.server.ServerCommandEvent;
 import org.bukkit.event.weather.ThunderChangeEvent;
 import org.bukkit.event.weather.WeatherChangeEvent;
 import org.bukkit.event.world.TimeSkipEvent;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
@@ -13,6 +16,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -162,6 +166,50 @@ class WeatherListenerTest {
 
         assertTrue(rain.isCancelled());
         assertTrue(nextTick.isEmpty());
+    }
+
+    @Test
+    void weatherCommandOverRconIsLeftAlone() {
+        WeatherListener listener = listener(Season.WINTER, 0.0, 0.0, 0.5);
+        WeatherChangeEvent rain = weather(true);
+        ThunderChangeEvent storm = thunder(true);
+
+        listener.onRemoteCommand(new RemoteServerCommandEvent(null, "weather thunder"));
+        listener.onWeatherChange(rain);
+        listener.onThunderChange(storm);
+
+        assertFalse(rain.isCancelled());
+        assertFalse(storm.isCancelled());
+    }
+
+    @Test
+    void otherCommandsOverRconDoNotExempt() {
+        WeatherListener listener = listener(Season.WINTER, 0.0, 0.0, 0.5);
+        WeatherChangeEvent rain = weather(true);
+
+        listener.onRemoteCommand(new RemoteServerCommandEvent(null, "time set day"));
+        listener.onWeatherChange(rain);
+
+        assertTrue(rain.isCancelled());
+        assertTrue(nextTick.isEmpty());
+    }
+
+    /**
+     * A handler for {@code ServerCommandEvent} alone would miss RCON, because Bukkit dispatches each
+     * event only to the handler list its own class declares.
+     */
+    @Test
+    void rconCommandsAreHandledThroughTheirOwnHandlerList() {
+        assertNotSame(ServerCommandEvent.getHandlerList(), RemoteServerCommandEvent.getHandlerList());
+
+        List<Class<?>> handled = new ArrayList<>();
+        for (Method method : WeatherListener.class.getDeclaredMethods()) {
+            if (method.isAnnotationPresent(EventHandler.class)) {
+                handled.add(method.getParameterTypes()[0]);
+            }
+        }
+
+        assertTrue(handled.contains(RemoteServerCommandEvent.class));
     }
 
     @Test

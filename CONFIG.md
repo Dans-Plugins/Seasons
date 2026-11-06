@@ -55,7 +55,7 @@ Vanilla still decides how long each weather period lasts. Whenever a period ends
 
 The chance is per period, not a share of time: vanilla clear periods usually last much longer than rainy ones, so a `rain-chance` of `0.5` does not mean it rains half the time.
 
-Weather set with vanilla's `/weather` (including `/minecraft:weather`, `/execute ... run weather`, and from the console or a command block), or cleared by players sleeping through the night, is never overridden. Spigot does not report why weather changed, so a change made by another plugin, by another plugin's weather command such as `/sun` or `/storm`, or by a `weather` command inside a data pack function, is treated like a natural one and the season may cancel it.
+Weather set with vanilla's `/weather` (including `/minecraft:weather`, `/execute ... run weather`, and from the console, over RCON or from a command block), or cleared by players sleeping through the night, is never overridden. Spigot does not report why weather changed, so a change made by another plugin, by another plugin's weather command such as `/sun` or `/storm`, or by a `weather` command inside a data pack function, is treated like a natural one and the season may cancel it.
 
 Rain does not yet turn to snow in winter. It already falls as snow in cold biomes, as in vanilla.
 
