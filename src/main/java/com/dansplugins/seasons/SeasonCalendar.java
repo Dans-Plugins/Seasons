@@ -3,6 +3,7 @@ package com.dansplugins.seasons;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,9 +41,12 @@ public final class SeasonCalendar {
      * Reads season lengths from {@code calendar.days-per-season.<season>}. A missing key falls back
      * to {@link #DEFAULT_DAYS_PER_SEASON}.
      *
-     * @throws IllegalArgumentException if a key is present but not a whole number of at least 1
+     * @throws IllegalArgumentException if a key is present but not a whole number of at least 1, or
+     *         the section is misshapen
      */
     public static SeasonCalendar fromConfig(ConfigurationSection config) {
+        ConfigFile.requireOnlyKeys(config, "calendar", List.of("days-per-season"));
+        ConfigFile.requireOnlyKeys(config, DAYS_PER_SEASON_PATH, Season.keys());
         Map<Season, Integer> days = new EnumMap<>(Season.class);
         for (Season season : Season.values()) {
             String path = DAYS_PER_SEASON_PATH + "." + season.key();

@@ -3,6 +3,8 @@ package com.dansplugins.seasons;
 import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.List;
+
 /**
  * The chat message broadcast when the season changes.
  *
@@ -39,9 +41,11 @@ public final class Announcement {
      * Reads {@code announcement.enabled} and {@code announcement.message}. A missing key falls back
      * to its default.
      *
-     * @throws IllegalArgumentException if a key is present but of the wrong type
+     * @throws IllegalArgumentException if a key is present but of the wrong type, or the section is
+     *         misshapen
      */
     public static Announcement fromConfig(ConfigurationSection config) {
+        ConfigFile.requireOnlyKeys(config, "announcement", List.of("enabled", "message"));
         boolean enabled = DEFAULT_ENABLED;
         if (config.contains(ENABLED_PATH)) {
             Object value = config.get(ENABLED_PATH);

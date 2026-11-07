@@ -1,5 +1,7 @@
 package com.dansplugins.seasons;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -24,6 +26,17 @@ public enum Season {
      */
     public String key() {
         return name().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * Returns the key of every season, in calendar order.
+     */
+    public static List<String> keys() {
+        List<String> keys = new ArrayList<>();
+        for (Season season : values()) {
+            keys.add(season.key());
+        }
+        return keys;
     }
 
     /**
