@@ -74,7 +74,7 @@ The message is sent only when the season itself changes. Moving to another day o
 
 ## Saved state
 
-The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables and whenever [`/season set`](COMMANDS.md) changes the date. Each save goes to `calendar.yml.tmp`, which then replaces `calendar.yml` in one step, so a save interrupted part-way leaves the previous date in place. A leftover `calendar.yml.tmp` is safe to delete. The file holds two keys:
+The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables and whenever [`/season set`](COMMANDS.md) changes the date. Each save goes to `calendar.yml.tmp`, which then replaces `calendar.yml` in one step, so a save interrupted part-way leaves the previous date in place. A leftover `calendar.yml.tmp` is safe to delete. Keep `calendar.yml` as a plain file in a writable folder: a symbolic link would be replaced by a plain file, and a file mounted on its own (a single-file Docker bind mount, for example) cannot be replaced, so the save fails and the console logs an error. The file holds two keys:
 
 | Key | Description |
 |---|---|
