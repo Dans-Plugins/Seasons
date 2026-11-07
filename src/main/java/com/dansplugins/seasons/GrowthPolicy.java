@@ -3,6 +3,7 @@ package com.dansplugins.seasons;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,9 +56,12 @@ public final class GrowthPolicy {
      * Reads multipliers from {@code growth.multiplier.<season>}. A missing key falls back to
      * {@link #defaultMultiplier(Season)}.
      *
-     * @throws IllegalArgumentException if a key is present but not a number of at least 0
+     * @throws IllegalArgumentException if a key is present but not a number of at least 0, or the
+     *         section is misshapen
      */
     public static GrowthPolicy fromConfig(ConfigurationSection config) {
+        ConfigFile.requireOnlyKeys(config, "growth", List.of("multiplier"));
+        ConfigFile.requireOnlyKeys(config, MULTIPLIER_PATH, Season.keys());
         Map<Season, Double> multipliers = new EnumMap<>(Season.class);
         for (Season season : Season.values()) {
             String path = MULTIPLIER_PATH + "." + season.key();

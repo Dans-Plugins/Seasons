@@ -2,6 +2,8 @@ package com.dansplugins.seasons;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -22,6 +24,11 @@ class SeasonTest {
     @Test
     void keyIsLowerCaseName() {
         assertEquals("autumn", Season.AUTUMN.key());
+    }
+
+    @Test
+    void keysListsEverySeasonInCalendarOrder() {
+        assertEquals(List.of("spring", "summer", "autumn", "winter"), Season.keys());
     }
 
     @Test

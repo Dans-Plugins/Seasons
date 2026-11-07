@@ -4,6 +4,8 @@ import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Saves and loads the current calendar date so it survives a restart.
@@ -15,6 +17,7 @@ public final class CalendarStore {
 
     static final String SEASON_KEY = "season";
     static final String DAY_KEY = "day-of-season";
+    static final String TEMPORARY_SUFFIX = ".tmp";
 
     private final File file;
 
@@ -49,12 +52,17 @@ public final class CalendarStore {
     }
 
     /**
-     * Writes the date, creating the parent directory if needed.
+     * Writes the date, creating the parent directory if needed. It is written to a temporary file
+     * that then replaces the real one in a single step, so a save that is interrupted part-way
+     * leaves the previous date in place rather than a truncated file.
      */
     public void save(CalendarDate date) throws IOException {
         YamlConfiguration yaml = new YamlConfiguration();
         yaml.set(SEASON_KEY, date.getSeason().key());
         yaml.set(DAY_KEY, date.getDayOfSeason());
-        yaml.save(file);
+        File temporary = new File(file.getPath() + TEMPORARY_SUFFIX);
+        yaml.save(temporary);
+        Files.move(temporary.toPath(), file.toPath(),
+                StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
     }
 }

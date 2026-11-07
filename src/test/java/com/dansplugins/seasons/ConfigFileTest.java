@@ -6,11 +6,15 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.function.Consumer;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -56,6 +60,94 @@ class ConfigFileTest {
     void missingFileIsRejected() {
         File file = new File(dir, "config.yml");
         assertThrows(IOException.class, () -> ConfigFile.requireReadable(file));
+    }
+
+    /** A configuration set up as {@code JavaPlugin#getConfig} does, with the jar's file as defaults. */
+    private static YamlConfiguration withShippedDefaults(String yaml) throws Exception {
+        YamlConfiguration config = new YamlConfiguration();
+        config.loadFromString(yaml);
+        config.setDefaults(shippedConfig());
+        return config;
+    }
+
+    private static YamlConfiguration shippedConfig() throws IOException {
+        try (InputStream in = ConfigFileTest.class.getClassLoader().getResourceAsStream("config.yml")) {
+            assertNotNull(in, "config.yml must be on the classpath");
+            return YamlConfiguration.loadConfiguration(new InputStreamReader(in, StandardCharsets.UTF_8));
+        }
+    }
+
+    private static void assertRejected(Consumer<YamlConfiguration> reader, String yaml, String path) throws Exception {
+        YamlConfiguration config = withShippedDefaults(yaml);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> reader.accept(config), yaml);
+        assertTrue(e.getMessage().contains(path), e.getMessage());
+    }
+
+    @Test
+    void shippedConfigIsAcceptedByEveryReader() throws IOException {
+        YamlConfiguration config = shippedConfig();
+        assertDoesNotThrow(() -> SeasonCalendar.fromConfig(config));
+        assertDoesNotThrow(() -> GrowthPolicy.fromConfig(config));
+        assertDoesNotThrow(() -> WeatherPolicy.fromConfig(config));
+        assertDoesNotThrow(() -> Announcement.fromConfig(config));
+    }
+
+    @Test
+    void missingSectionsAreAccepted() throws Exception {
+        YamlConfiguration config = withShippedDefaults("");
+        assertDoesNotThrow(() -> SeasonCalendar.fromConfig(config));
+        assertDoesNotThrow(() -> GrowthPolicy.fromConfig(config));
+        assertDoesNotThrow(() -> WeatherPolicy.fromConfig(config));
+        assertDoesNotThrow(() -> Announcement.fromConfig(config));
+    }
+
+    @Test
+    void aPartlyFilledSectionKeepsTheDefaultsForTheRest() throws Exception {
+        YamlConfiguration config = withShippedDefaults("calendar:\n  days-per-season:\n    summer: 90\n");
+        SeasonCalendar calendar = SeasonCalendar.fromConfig(config);
+        assertEquals(90, calendar.daysIn(Season.SUMMER));
+        assertEquals(SeasonCalendar.DEFAULT_DAYS_PER_SEASON, calendar.daysIn(Season.AUTUMN));
+    }
+
+    @Test
+    void calendarRejectsAPlainValueInPlaceOfASection() throws Exception {
+        assertRejected(SeasonCalendar::fromConfig, "calendar: 60\n", "calendar");
+        assertRejected(SeasonCalendar::fromConfig, "calendar:\n  days-per-season: 60\n",
+                SeasonCalendar.DAYS_PER_SEASON_PATH);
+    }
+
+    @Test
+    void calendarRejectsKeysThatNameNoSetting() throws Exception {
+        assertRejected(SeasonCalendar::fromConfig, "calendar:\n  days-per-season:\n    fall: 60\n",
+                SeasonCalendar.DAYS_PER_SEASON_PATH + ".fall");
+        assertRejected(SeasonCalendar::fromConfig, "calendar:\n  days-per-season:\n    Summer: 60\n",
+                SeasonCalendar.DAYS_PER_SEASON_PATH + ".Summer");
+        assertRejected(SeasonCalendar::fromConfig, "calendar:\n  days-per-season:\n  summer: 60\n",
+                "calendar.summer");
+    }
+
+    @Test
+    void growthRejectsAMisshapenSection() throws Exception {
+        assertRejected(GrowthPolicy::fromConfig, "growth: 2\n", "growth");
+        assertRejected(GrowthPolicy::fromConfig, "growth:\n  multiplier: 2\n", GrowthPolicy.MULTIPLIER_PATH);
+        assertRejected(GrowthPolicy::fromConfig, "growth:\n  winter: 2\n", "growth.winter");
+        assertRejected(GrowthPolicy::fromConfig, "growth:\n  multiplier:\n    fall: 2\n",
+                GrowthPolicy.MULTIPLIER_PATH + ".fall");
+    }
+
+    @Test
+    void weatherRejectsAMisshapenSection() throws Exception {
+        assertRejected(WeatherPolicy::fromConfig, "weather: 0.5\n", "weather");
+        assertRejected(WeatherPolicy::fromConfig, "weather:\n  winter: 0.9\n", "weather.winter");
+        assertRejected(WeatherPolicy::fromConfig, "weather:\n  fall:\n    rain-chance: 0.9\n", "weather.fall");
+        assertRejected(WeatherPolicy::fromConfig, "weather:\n  winter:\n    rain_chance: 0.9\n",
+                "weather.winter.rain_chance");
+    }
+
+    @Test
+    void announcementRejectsAMisshapenSection() throws Exception {
+        assertRejected(Announcement::fromConfig, "announcement: false\n", "announcement");
+        assertRejected(Announcement::fromConfig, "announcement:\n  enable: false\n", "announcement.enable");
     }
 
     /**

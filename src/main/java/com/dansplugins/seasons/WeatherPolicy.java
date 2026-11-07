@@ -3,6 +3,7 @@ package com.dansplugins.seasons;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,9 +61,15 @@ public final class WeatherPolicy {
      * Reads chances from {@code weather.<season>.rain-chance} and
      * {@code weather.<season>.thunder-chance}. A missing key falls back to its default.
      *
-     * @throws IllegalArgumentException if a key is present but not a number from 0 to 1
+     * @throws IllegalArgumentException if a key is present but not a number from 0 to 1, or a
+     *         section is misshapen
      */
     public static WeatherPolicy fromConfig(ConfigurationSection config) {
+        ConfigFile.requireOnlyKeys(config, WEATHER_PATH, Season.keys());
+        for (String season : Season.keys()) {
+            ConfigFile.requireOnlyKeys(config, WEATHER_PATH + "." + season,
+                    List.of(RAIN_CHANCE_KEY, THUNDER_CHANCE_KEY));
+        }
         return new WeatherPolicy(readChances(config, RAIN_CHANCE_KEY, DEFAULT_RAIN),
                 readChances(config, THUNDER_CHANCE_KEY, DEFAULT_THUNDER));
     }

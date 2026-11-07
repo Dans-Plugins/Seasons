@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,6 +59,42 @@ class CalendarStoreTest {
         String yaml = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
         assertTrue(yaml.contains("season: winter"), yaml);
         assertTrue(yaml.contains("day-of-season: 4"), yaml);
+    }
+
+    /**
+     * A hard link keeps showing the file it was made from, so it only sees the new date if the save
+     * wrote into that file instead of replacing it.
+     */
+    @Test
+    void saveReplacesTheFileInsteadOfWritingIntoIt() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        new CalendarStore(file).save(new CalendarDate(Season.AUTUMN, 7));
+        File link = new File(dir, "earlier.yml");
+        Files.createLink(link.toPath(), file.toPath());
+
+        new CalendarStore(file).save(new CalendarDate(Season.WINTER, 2));
+
+        assertEquals(new CalendarDate(Season.WINTER, 2), new CalendarStore(file).load(calendarOf(10)));
+        assertEquals(new CalendarDate(Season.AUTUMN, 7), new CalendarStore(link).load(calendarOf(10)));
+    }
+
+    @Test
+    void saveLeavesNoTemporaryFileBehind() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        new CalendarStore(file).save(new CalendarDate(Season.SPRING, 3));
+        assertEquals(List.of("calendar.yml"), List.of(dir.list()));
+    }
+
+    @Test
+    void aSaveThatCannotWriteLeavesThePreviousDate() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        new CalendarStore(file).save(new CalendarDate(Season.AUTUMN, 7));
+        // A directory where the temporary file should go makes the write fail.
+        assertTrue(new File(dir, "calendar.yml" + CalendarStore.TEMPORARY_SUFFIX).mkdir());
+
+        assertThrows(IOException.class, () -> new CalendarStore(file).save(new CalendarDate(Season.WINTER, 2)));
+
+        assertEquals(new CalendarDate(Season.AUTUMN, 7), new CalendarStore(file).load(calendarOf(10)));
     }
 
     @Test

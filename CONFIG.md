@@ -4,6 +4,8 @@ Seasons writes `plugins/Seasons/config.yml` on first start. Edit it and restart 
 
 If the file is not valid YAML (a tab used for indentation, for example), the plugin does not enable, and the console names the file and what is wrong with it. `calendar.yml` is left as it is, so the saved date is safe; fix the file and restart.
 
+The same happens if `calendar`, `growth`, `weather`, `announcement` or a section inside them is given a plain value instead of its keys (`days-per-season: 60`), or holds a key that is not in the tables below (`fall`, `Summer`, or a key indented one level too shallow). The console names the offending path. Keys are case-sensitive, and the season names are `spring`, `summer`, `autumn` and `winter`.
+
 ## Calendar
 
 | Key | Default | Description |
@@ -72,7 +74,7 @@ The message is sent only when the season itself changes. Moving to another day o
 
 ## Saved state
 
-The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables and whenever [`/season set`](COMMANDS.md) changes the date. It holds two keys:
+The current date is kept in `plugins/Seasons/calendar.yml`, separate from the configuration, and is written when the plugin disables and whenever [`/season set`](COMMANDS.md) changes the date. Each save goes to `calendar.yml.tmp`, which then replaces `calendar.yml` in one step, so a save interrupted part-way leaves the previous date in place. A leftover `calendar.yml.tmp` is safe to delete. Keep `calendar.yml` as a plain file in a writable folder: a symbolic link would be replaced by a plain file, and a file mounted on its own (a single-file Docker bind mount, for example) cannot be replaced, so the save fails and the console logs an error. The file holds two keys:
 
 | Key | Description |
 |---|---|
