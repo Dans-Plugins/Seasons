@@ -127,4 +127,41 @@ class CalendarStoreTest {
         write(file, "season: [spring\n");
         assertThrows(IOException.class, () -> new CalendarStore(file).load(calendarOf(5)));
     }
+
+    @Test
+    void loadRejectsMissingSeason() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        write(file, "day-of-season: 3\n");
+        IOException e = assertThrows(IOException.class, () -> new CalendarStore(file).load(calendarOf(5)));
+        assertTrue(e.getMessage().contains("season"), e.getMessage());
+    }
+
+    @Test
+    void loadRejectsDayThatIsNotAWholeNumberNamingTheValue() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        for (String day : List.of("2.5", "three", "-4")) {
+            write(file, "season: spring\nday-of-season: " + day + "\n");
+            IOException e = assertThrows(IOException.class,
+                    () -> new CalendarStore(file).load(calendarOf(5)), day);
+            assertTrue(e.getMessage().contains("day-of-season"), e.getMessage());
+            assertTrue(e.getMessage().contains(day), e.getMessage());
+        }
+    }
+
+    @Test
+    void loadReadsTheSeasonWhateverItsCase() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        write(file, "season: Summer\nday-of-season: 4\n");
+        assertEquals(new CalendarDate(Season.SUMMER, 4), new CalendarStore(file).load(calendarOf(5)));
+    }
+
+    @Test
+    void aRejectedFileIsLeftAsItWas() throws IOException {
+        File file = new File(dir, "calendar.yml");
+        String contents = "season: monsoon\nday-of-season: 0\n";
+        write(file, contents);
+        assertThrows(IOException.class, () -> new CalendarStore(file).load(calendarOf(5)));
+        assertEquals(contents, new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8));
+        assertEquals(List.of("calendar.yml"), List.of(dir.list()));
+    }
 }
