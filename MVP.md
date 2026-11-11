@@ -34,7 +34,7 @@ The visual half of "seasons" is the half a Spigot plugin cannot deliver. Being e
 
 ## Open questions
 
-- Should day length be implemented here at all, given [Timescale](https://github.com/Dans-Plugins/Timescale) exists to scale time? Two plugins both driving `doDaylightCycle` will fight. Likely resolution: Seasons exposes a target day length and defers to Timescale when it is present, or the feature moves to Timescale entirely and Seasons only publishes the season.
+- Should day length be implemented here at all, given [Timescale](https://github.com/Dans-Plugins/Timescale) exists to scale time? Two plugins both driving `doDaylightCycle` will fight. Likely resolution: Seasons exposes a target day length and defers to Timescale when it is present, or the feature moves to Timescale entirely and Seasons only publishes the season. *As implemented for RFC 0005 (Dans-Plugins RFCs): the day length comes from a real place and date and is off by default; Seasons nudges the clock itself only while Timescale is not enabled, and otherwise only publishes its target as a Bukkit service, which Timescale does not read yet.*
 - Does the calendar advance on real time or on in-game days? In-game days is the intuitive answer and couples this to whatever is scaling time.
 - Does a season change fire an event other plugins can listen for? Cheap to add, and the thing an economy or a merchant plugin would want.
 
