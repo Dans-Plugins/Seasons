@@ -68,7 +68,8 @@ README.md                             User-facing description
 
 - Crop growth is scaled by intercepting growth events, not by changing `randomTickSpeed` (MVP.md).
 - Foliage recolouring, temperature simulation and snow accumulation are explicit v1 non-goals.
-- Seasons and Timescale must not both drive the world clock; see MVP.md.
+- Seasons and Timescale must not both drive the world clock; see MVP.md. `DayLengthClock` stands down while Timescale is enabled and never touches the daylight-cycle gamerule.
+- `sun/SolarPosition` is a port of Strata's `strata_solar_position` (RFC 0005). `SolarPositionCrossCheckTest` holds it to `src/test/resources/solar/strata_solar_table.csv`, written from a Strata release by `scripts/solar/strata_solar_table.c` (steps in its header). When a Strata release changes its solar math, regenerate the table against that release and port the change; the table names the Strata version it came from. Keep Strata's MIT notice (`LICENSES/strata-MIT.txt`) with the port.
 
 ## Do / Don't
 

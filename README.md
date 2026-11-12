@@ -17,18 +17,24 @@ This plugin was proposed from a Kingdom: First Era player request on 2026-09-04.
 
 *One year of the default `config.yml` (four 28-day seasons; growth x1.5 / x1.0 / x0.75 / x0.25; rain-chance 0.6 / 0.3 / 0.5 / 0.4; thunder-chance 0.2 / 0.3 / 0.4 / 0.05) over a plains farm at four steps a day, about 30 seconds. Also as [MP4](docs/images/seasons-year.mp4) and [WebM](docs/images/seasons-year.webm). Rendered headless with [Strata](https://github.com/Preponderous-Software/strata) 0.6.0 by [`scripts/preview/render_year.py`](scripts/preview/render_year.py), a development tool that is not part of the plugin or its build.*
 
-*What is real: the calendar, multipliers and chances are read from the config file; every crop growth step goes through a copy of `GrowthPolicy.stagesFor`, and every natural weather change through a copy of `WeatherListener`'s rule, with vanilla's own weather period lengths (Spigot 1.21.1). The "long run" line is the share of time a season would rain, and thunder, if it never ended; the year shown is the one closest to those shares out of 200 random years. Thunder is rare at the defaults (about half a day a year, only while it is raining), and there is none in this year. What is not: the grass and leaves keep their plains colours, no snow falls, and the sun stays at 15:00, because Seasons changes none of these (foliage colour is an MVP non-goal; day length is not implemented yet). Nothing advances the date yet either, so this shows what the calendar will do once it does.*
+*What is real: the calendar, multipliers and chances are read from the config file; every crop growth step goes through a copy of `GrowthPolicy.stagesFor`, and every natural weather change through a copy of `WeatherListener`'s rule, with vanilla's own weather period lengths (Spigot 1.21.1). The "long run" line is the share of time a season would rain, and thunder, if it never ended; the year shown is the one closest to those shares out of 200 random years. Thunder is rare at the defaults (about half a day a year, only while it is raining), and there is none in this year. What is not: the grass and leaves keep their plains colours, no snow falls, and the sun stays at 15:00, because Seasons changes none of these (foliage colour is an MVP non-goal; day length is opt-in and off in the default config). Nothing advances the date yet either, so this shows what the calendar will do once it does.*
+
+### Preview: day length at a real place
+
+![Daylight hours through 2026 at four places. Singapore stays near 12 hours all year. Sydney runs from about 14.3 hours in December down to 9.7 in June. London, the default place, runs from 7.6 hours in December up to 16.4 in June. Tromsø sits on the 23-hour cap from late May to late July and on the 1-hour floor from late November to mid January, while the real sun there never sets, or never or barely rises.](docs/images/daylight-by-latitude.png)
+
+*With `day-length.mode: real-place`, each in-game day gets the daylight share of the real date it stands for at the configured place, out of the day's usual length. Drawn for every day of 2026 at four places (London, 51.5° N, is the default `latitude`/`longitude`) from the plugin's own `Daylight.on` and `DayLength.clamp`, by [`scripts/solar/plot_daylight.py`](scripts/solar/plot_daylight.py) running [`DaylightTable.java`](scripts/solar/DaylightTable.java) against the compiled classes, a development tool that is not part of the plugin or its build. The solid line is what the plugin applies; where the real sun is up longer or shorter than the 1 to 23 hour limits, the real value is dotted. The horizon is geometric (no refraction), so these days run a few minutes shorter than published sunrise tables.*
 
 ## Project Status
 
-**Pre-implementation.** The plugin loads a configurable four-season calendar and keeps the current date across restarts, and scales crop growth and biases rain and thunder by the current season. `/season` reports the date and `/season set` changes it, and a configurable chat message announces each change of season, but nothing advances the date on its own yet. The scope of the first release is defined in [MVP.md](MVP.md) — read that before opening a pull request, because it says as much about what v1 will *not* do as what it will.
+**Pre-implementation.** The plugin loads a configurable four-season calendar and keeps the current date across restarts, and scales crop growth and biases rain and thunder by the current season. `/season` reports the date and `/season set` changes it, and a configurable chat message announces each change of season. Day length can follow a real place and date (off by default; see [CONFIG.md](CONFIG.md#day-length)). Nothing advances the date on its own yet. The scope of the first release is defined in [MVP.md](MVP.md) — read that before opening a pull request, because it says as much about what v1 will *not* do as what it will.
 
 ## Planned Features
 
 - A configurable year divided into four seasons
 - Per-season weather bias — snow in winter, storms in autumn
 - Per-season crop growth rates
-- Per-season day length
+- Day length from a real place and date: summer days run long and winter days short, as they do at the configured latitude
 - A command to read the current season and date, and an admin command to set it
 - A configurable chat announcement when the season changes
 
@@ -48,14 +54,14 @@ The jar is written to `build/libs/Seasons-<version>.jar`.
 
 ### Dependencies
 
-None. Seasons is intended to stand alone.
+None. Seasons is intended to stand alone. When [Timescale](https://github.com/Dans-Plugins/Timescale) is installed, it keeps the world clock and Seasons does not move it (see [CONFIG.md](CONFIG.md#day-length)).
 
 ## Usage
 
 ### Documentation
 
 - [MVP](MVP.md) – Scope of the first release, and its deliberate non-goals
-- [Configuration](CONFIG.md) – Every `config.yml` key, including the per-season growth multipliers and weather chances, the season-change announcement, and the saved calendar file
+- [Configuration](CONFIG.md) – Every `config.yml` key, including the per-season growth multipliers and weather chances, the season-change announcement, the real-place day length, and the saved calendar file
 - [Commands](COMMANDS.md) – `/season` and `/season set`, and their permissions
 
 `USER_GUIDE.md` and `CHANGELOG.md` land with the first release, per [DOCUMENTATION_PRACTICES.md](https://github.com/Dans-Plugins/dpc-conventions/blob/main/docs/DOCUMENTATION_PRACTICES.md).
@@ -77,3 +83,5 @@ This repository follows the standards in [dpc-conventions](https://github.com/Da
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
 See the [LICENSE](LICENSE) file for full details.
+
+The solar position equations in `src/main/java/com/dansplugins/seasons/sun/SolarPosition.java` are ported from [Strata](https://github.com/Preponderous-Software/strata), which is MIT licensed; its notice is kept in [LICENSES/strata-MIT.txt](LICENSES/strata-MIT.txt).

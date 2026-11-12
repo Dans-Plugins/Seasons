@@ -4,7 +4,7 @@ Seasons writes `plugins/Seasons/config.yml` on first start. Edit it and restart 
 
 If the file is not valid YAML (a tab used for indentation, for example), the plugin does not enable, and the console names the file and what is wrong with it. `calendar.yml` is left as it is, so the saved date is safe; fix the file and restart.
 
-The same happens if `calendar`, `growth`, `weather`, `announcement` or a section inside them is given a plain value instead of its keys (`days-per-season: 60`), or holds a key that is not in the tables below (`fall`, `Summer`, or a key indented one level too shallow). The console names the offending path. Keys are case-sensitive, and the season names are `spring`, `summer`, `autumn` and `winter`.
+The same happens if `calendar`, `growth`, `weather`, `announcement`, `day-length` or a section inside them is given a plain value instead of its keys (`days-per-season: 60`), or holds a key that is not in the tables below (`fall`, `Summer`, or a key indented one level too shallow). The console names the offending path. Keys are case-sensitive, and the season names are `spring`, `summer`, `autumn` and `winter`.
 
 ## Calendar
 
@@ -71,6 +71,26 @@ Rain does not yet turn to snow in winter. It already falls as snow in cold biome
 `announcement.enabled` must be `true` or `false`, and `announcement.message` must be text. A missing key uses the default. Any other value stops the plugin from enabling, and the console names the offending key. A blank message announces nothing, as does `enabled: false`.
 
 The message is sent only when the season itself changes. Moving to another day of the same season announces nothing. For now only [`/season set`](COMMANDS.md) changes the date, so it is the only thing that triggers the announcement.
+
+## Day length
+
+| Key | Default | Description |
+|---|---|---|
+| `day-length.mode` | `'off'` | `'off'` leaves the day length to vanilla (or to Timescale). `real-place` makes each in-game day as long, in daylight, as the real date it stands for at the place below. |
+| `day-length.latitude` | `51.5` | Latitude of the place, in degrees from -90 to 90, north positive. |
+| `day-length.longitude` | `-0.13` | Longitude of the place, in degrees from -180 to 180, east positive. |
+| `day-length.spring-starts` | `auto` | The real month and day that spring day 1 stands for, such as `03-20` or `3-1`. `auto` uses the March equinox (20 March) at or north of the equator and the September equinox (23 September) south of it. |
+
+`mode` must be `'off'` or `real-place` (an unquoted `off` is read as `'off'` too). `latitude` and `longitude` must be numbers in their ranges, and `spring-starts` must be `auto` or a month and day that exist in a common year (so not `02-29`). A missing key uses the default. Any other value stops the plugin from enabling, and the console names the offending key. Every key is checked even while `mode` is `'off'`.
+
+With `mode: real-place`, the Seasons year is stretched over one real year that starts on `spring-starts`: with four 28-day seasons, each in-game day stands for about 3.3 real days. For each in-game day, the share of the real day that the sun is above the horizon at the configured place becomes the share of the in-game day that is daytime. At the defaults (London), summer day 1 stands for 20 June and has 16.4 hours of daylight, so its day half runs 1.37 times as long as vanilla and its night half 0.63 times; winter day 1 stands for 20 December and has 7.6 hours. The whole in-game day keeps its vanilla length of 20 minutes, only split differently. With the March equinox as the start, the longest day falls at the start of summer, as in astronomical seasons; set `spring-starts` to about `02-04` for the solstice to fall in mid-summer, or to `03-01` for meteorological seasons.
+
+- **What changes.** Only *when* the sun is up. Vanilla clients draw the sun on a fixed path, so how high it climbs and where it rises do not change. The day half is time of day 0 to 11999 and the night half 12000 to 23999, as in Timescale; the vanilla sun clears the horizon slightly before 0 and after 12000, so this is an approximation of "the sun is up".
+- **Polar places.** Beyond the polar circles the real sun can stay up or down all day. The daylight applied is kept between 1 and 23 hours of the real day, so a polar night still has a short day and a polar summer a short night.
+- **Horizon.** Sunrise and sunset are taken with the sun's centre on a geometric horizon, without refraction, to agree with [Strata](https://github.com/Preponderous-Software/strata)'s sun. Published sunrise tables count a few more minutes of daylight a day.
+- **The clock.** Vanilla's daylight cycle keeps running, and sleeping through the night works as in vanilla. Once per server tick, Seasons holds the clock of each overworld back or moves it on a little. If the daylight cycle is turned off, or players sleep, `/time` is used or another plugin moves the clock, that world is left alone for that tick and followed from its new time. The nether and the end are not touched. Spigot reports each nudge to other plugins as a `TimeSkipEvent` with the `CUSTOM` reason.
+- **Timescale.** Seasons and Timescale must not both drive the world clock. While [Timescale](https://github.com/Dans-Plugins/Timescale) is enabled, Seasons does not touch any clock, and the day length is Timescale's. Seasons still registers its target, `com.dansplugins.seasons.sun.DayLength` (`daylightFraction()`, `dayRatio()` and `nightRatio()` in Timescale's terms), with Bukkit's services manager, for a clock plugin to read; Timescale does not read it yet.
+- **Privacy.** The place is only read from this file. It is never shown to players, and the console shows only the real date the current day stands for and its daylight.
 
 ## Saved state
 

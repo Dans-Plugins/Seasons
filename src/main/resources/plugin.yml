@@ -3,6 +3,8 @@ version: '${version}'
 main: com.dansplugins.seasons.Seasons
 api-version: '1.16'
 authors: ["Daniel McCoy Stephenson"]
+# Loaded first when present, so Seasons can see at enable that Timescale owns the world clock.
+softdepend: [Timescale]
 description: Gives the server a year of seasons that change weather, growth and day length
 commands:
   season:

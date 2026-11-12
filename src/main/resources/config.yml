@@ -34,3 +34,15 @@ announcement:
   # The message. {season} is replaced with the new season; & colour codes are allowed.
   # A blank message announces nothing.
   message: '&6It is now {season}.'
+day-length:
+  # 'off' leaves the day length to vanilla (or to Timescale). 'real-place' makes each in-game day
+  # as long, in daylight, as the real date it stands for at the place below. The whole day keeps
+  # its vanilla length; only the split between day and night changes.
+  mode: 'off'
+  # The place, in degrees: latitude -90 to 90 (north positive), longitude -180 to 180 (east positive).
+  # Only the console sees these values; players are never shown them.
+  latitude: 51.5
+  longitude: -0.13
+  # The real month and day that spring day 1 stands for, such as '03-20'. 'auto' uses the March
+  # equinox north of the equator and the September equinox south of it.
+  spring-starts: auto
