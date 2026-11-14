@@ -133,6 +133,66 @@ class DayLengthClockTest {
     }
 
     @Test
+    void standingDownForgetsWhereEachWorldWas() {
+        FakeWorld world = new FakeWorld(0);
+        boolean[] timescale = {false};
+        DayLengthClock clock = new DayLengthClock(() -> List.of(world), () -> 0.25, () -> timescale[0]);
+        clock.run();
+        world.vanillaTick();
+        clock.run();
+        assertEquals(2, world.time); // f = 0.25: the day half moves two ticks per tick
+        assertEquals(1, world.writes);
+
+        timescale[0] = true;
+        clock.run();
+        timescale[0] = false;
+        world.vanillaTick();
+        clock.run();
+        // One tick past where Seasons last left it, but the clock was Timescale's in between,
+        // so this tick only takes the world up again.
+        assertEquals(3, world.time);
+        assertEquals(1, world.writes);
+    }
+
+    @Test
+    void aWorldThatLeavesAndComesBackIsTakenUpAfresh() {
+        FakeWorld world = new FakeWorld(0);
+        List<FakeWorld> worlds = new ArrayList<>(List.of(world));
+        DayLengthClock clock = new DayLengthClock(() -> worlds, () -> 0.25, () -> false);
+        clock.run();
+        world.vanillaTick();
+        clock.run();
+        assertEquals(2, world.time);
+        assertEquals(1, world.writes);
+
+        worlds.clear(); // unloaded
+        clock.run();
+        worlds.add(world); // loaded again
+        world.vanillaTick();
+        clock.run();
+        assertEquals(3, world.time);
+        assertEquals(1, world.writes);
+    }
+
+    @Test
+    void aNewDaylightShareTakesEffectOnTheNextTick() {
+        FakeWorld world = new FakeWorld(0);
+        double[] fraction = {0.5};
+        DayLengthClock clock = new DayLengthClock(() -> List.of(world), () -> fraction[0], () -> false);
+        clock.run();
+        world.vanillaTick();
+        clock.run();
+        assertEquals(1, world.time);
+        assertEquals(0, world.writes);
+
+        fraction[0] = 0.25; // the season changed
+        world.vanillaTick();
+        clock.run();
+        assertEquals(3, world.time);
+        assertEquals(1, world.writes);
+    }
+
+    @Test
     void eachWorldIsShapedOnItsOwn() {
         FakeWorld a = new FakeWorld(0);
         FakeWorld b = new FakeWorld(12000);
@@ -155,6 +215,11 @@ class DayLengthClockTest {
         assertFalse(DayLengthClock.isNight(11999));
         assertTrue(DayLengthClock.isNight(12000));
         assertTrue(DayLengthClock.isNight(-1));
+        assertFalse(DayLengthClock.isNight(-12001));
+        // Full world time counts every elapsed day; only the time of day decides the half.
+        assertTrue(DayLengthClock.isNight(36000));
+        assertTrue(DayLengthClock.isNight(47999));
+        assertFalse(DayLengthClock.isNight(48000));
         assertEquals(2.0, DayLengthClock.ticksPerTick(0, 0.25));
         assertEquals(2.0 / 3.0, DayLengthClock.ticksPerTick(12000, 0.25), 1e-12);
     }
