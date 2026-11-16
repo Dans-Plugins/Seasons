@@ -110,6 +110,50 @@ class DayLengthSettingsTest {
     }
 
     @Test
+    void theOtherEdgesOfTheRangesAreAccepted() throws Exception {
+        DayLengthSettings settings = DayLengthSettings.fromConfig(yaml("day-length:\n  latitude: 90\n  longitude: -180\n"));
+        assertEquals(90.0, settings.getLatitude());
+        assertEquals(-180.0, settings.getLongitude());
+    }
+
+    @Test
+    void aSpringStartWithSurroundingSpacesIsTrimmed() throws Exception {
+        assertEquals(LocalDate.of(RealYear.REFERENCE_YEAR, 3, 1), DayLengthSettings.fromConfig(
+                yaml("day-length:\n  spring-starts: ' 03-01 '\n")).getSpringStart());
+    }
+
+    @Test
+    void anExplicitSpringStartOverridesTheSouthernEquinox() throws Exception {
+        assertEquals(LocalDate.of(RealYear.REFERENCE_YEAR, 9, 1), DayLengthSettings.fromConfig(
+                yaml("day-length:\n  latitude: -33.9\n  spring-starts: 09-01\n")).getSpringStart());
+    }
+
+    @Test
+    void aNumericModeIsRefusedByName() throws Exception {
+        assertEquals("day-length.mode must be 'off' or 'real-place', but was '1'",
+                messageFor("day-length:\n  mode: 1\n"));
+    }
+
+    @Test
+    void theConstructorTakesTheEquinoxOfThePlacesHemisphereWhenNoSpringStartIsGiven() {
+        assertEquals(RealYear.SOUTHERN_SPRING, new DayLengthSettings(true, -33.9, 151.2, null).getSpringStart());
+        assertEquals(RealYear.NORTHERN_SPRING, new DayLengthSettings(true, 51.5, -0.13, null).getSpringStart());
+        LocalDate given = LocalDate.of(RealYear.REFERENCE_YEAR, 2, 4);
+        assertEquals(given, new DayLengthSettings(false, -33.9, 151.2, given).getSpringStart());
+    }
+
+    @Test
+    void theConstructorRefusesAPlaceOutOfRange() {
+        for (double[] place : new double[][] {{90.5, 0}, {-90.5, 0}, {0, 180.5}, {0, -181}, {Double.NaN, 0},
+                {0, Double.POSITIVE_INFINITY}}) {
+            IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                    () -> new DayLengthSettings(true, place[0], place[1], null));
+            assertTrue(e.getMessage().startsWith("Latitude must be in [-90, 90] and longitude in [-180, 180]"),
+                    e.getMessage());
+        }
+    }
+
+    @Test
     void anUnknownKeyOrAPlainValueIsRefused() throws Exception {
         assertEquals("day-length.lat is not a setting. Use mode, latitude, longitude, spring-starts.",
                 messageFor("day-length:\n  lat: 51.5\n"));
