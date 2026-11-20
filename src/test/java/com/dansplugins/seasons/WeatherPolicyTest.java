@@ -132,6 +132,77 @@ class WeatherPolicyTest {
     }
 
     @Test
+    void constructorRejectsMissingThunderSeasonNamingThunderChance() {
+        Map<Season, Double> thunder = all(0.5);
+        thunder.remove(Season.WINTER);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> new WeatherPolicy(all(0.5), thunder));
+        assertTrue(e.getMessage().contains("winter"), e.getMessage());
+        assertTrue(e.getMessage().contains("thunder-chance"), e.getMessage());
+    }
+
+    @Test
+    void policyKeepsItsOwnCopyOfTheChances() {
+        Map<Season, Double> rain = all(0.5);
+        Map<Season, Double> thunder = all(0.5);
+        WeatherPolicy policy = new WeatherPolicy(rain, thunder);
+        rain.put(Season.SPRING, 0.9);
+        thunder.put(Season.SPRING, 0.1);
+        assertEquals(0.5, policy.rainChanceFor(Season.SPRING));
+        assertEquals(0.5, policy.thunderChanceFor(Season.SPRING));
+    }
+
+    @Test
+    void configAcceptsZeroAndOneAtTheEdges() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("weather.spring.rain-chance", 1);
+        config.set("weather.summer.rain-chance", 1.0);
+        config.set("weather.winter.thunder-chance", 0.0);
+        WeatherPolicy policy = WeatherPolicy.fromConfig(config);
+        assertEquals(1.0, policy.rainChanceFor(Season.SPRING));
+        assertEquals(1.0, policy.rainChanceFor(Season.SUMMER));
+        assertEquals(0.0, policy.thunderChanceFor(Season.WINTER));
+        assertTrue(policy.rains(Season.SPRING, 0.999999));
+        assertFalse(policy.thunders(Season.WINTER, 0.0));
+    }
+
+    @Test
+    void configRejectsValueJustAboveOneNamingTheKey() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("weather.summer.thunder-chance", 1.01);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> WeatherPolicy.fromConfig(config));
+        assertTrue(e.getMessage().contains("weather.summer.thunder-chance"), e.getMessage());
+    }
+
+    @Test
+    void configRejectsNegativeValueNamingTheKey() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("weather.autumn.thunder-chance", -0.1);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> WeatherPolicy.fromConfig(config));
+        assertTrue(e.getMessage().contains("weather.autumn.thunder-chance"), e.getMessage());
+    }
+
+    @Test
+    void configRejectsNotANumberNamingTheKey() throws Exception {
+        YamlConfiguration config = new YamlConfiguration();
+        config.loadFromString("weather:\n  spring:\n    rain-chance: .nan\n");
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> WeatherPolicy.fromConfig(config));
+        assertTrue(e.getMessage().contains("weather.spring.rain-chance"), e.getMessage());
+    }
+
+    @Test
+    void configRejectsABooleanNamingTheKey() {
+        YamlConfiguration config = new YamlConfiguration();
+        config.set("weather.winter.rain-chance", true);
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class,
+                () -> WeatherPolicy.fromConfig(config));
+        assertTrue(e.getMessage().contains("weather.winter.rain-chance"), e.getMessage());
+    }
+
+    @Test
     void bundledConfigMatchesDefaults() throws IOException {
         try (InputStream in = getClass().getClassLoader().getResourceAsStream("config.yml")) {
             assertNotNull(in, "config.yml must be on the classpath");
