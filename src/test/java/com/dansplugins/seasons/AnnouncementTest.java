@@ -59,6 +59,47 @@ class AnnouncementTest {
     }
 
     @Test
+    void constructorRejectsMissingMessage() {
+        assertThrows(IllegalArgumentException.class, () -> new Announcement(true, null));
+        assertThrows(IllegalArgumentException.class, () -> new Announcement(false, null));
+    }
+
+    @Test
+    void everyPlaceholderIsReplaced() {
+        Announcement announcement = new Announcement(true, "{season}, {season}!");
+        assertEquals("winter, winter!", announcement.messageFor(AUTUMN_7, WINTER_1));
+    }
+
+    @Test
+    void messageWithoutPlaceholderIsSentAsWritten() {
+        Announcement announcement = new Announcement(true, "&aThe season turns.");
+        assertEquals(ChatColor.GREEN + "The season turns.", announcement.messageFor(AUTUMN_7, WINTER_1));
+    }
+
+    @Test
+    void eachNewSeasonIsNamedByItsKey() {
+        Announcement announcement = new Announcement(true, "{season}");
+        assertEquals("spring", announcement.messageFor(WINTER_1, new CalendarDate(Season.SPRING, 1)));
+        assertEquals("summer", announcement.messageFor(new CalendarDate(Season.SPRING, 1),
+                new CalendarDate(Season.SUMMER, 1)));
+        assertEquals("autumn", announcement.messageFor(new CalendarDate(Season.SUMMER, 3), AUTUMN_7));
+    }
+
+    @Test
+    void disabledAnnouncesNothingEvenWithoutAPreviousDate() {
+        assertNull(new Announcement(false, "It is now {season}.").messageFor(null, WINTER_1));
+        assertNull(new Announcement(true, " ").messageFor(null, WINTER_1));
+    }
+
+    @Test
+    void configLoadedFromYamlKeepsColourCodesAndPlaceholder() throws Exception {
+        YamlConfiguration config = new YamlConfiguration();
+        config.loadFromString("announcement:\n  enabled: true\n  message: '&b{season} is here'\n");
+        assertEquals(ChatColor.AQUA + "winter is here",
+                Announcement.fromConfig(config).messageFor(AUTUMN_7, WINTER_1));
+    }
+
+    @Test
     void emptyConfigUsesDefaults() {
         Announcement announcement = Announcement.fromConfig(new YamlConfiguration());
         assertEquals(ChatColor.translateAlternateColorCodes('&',
